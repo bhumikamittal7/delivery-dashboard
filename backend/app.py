@@ -21,7 +21,8 @@ vehicles = [
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", google_api_key=GOOGLE_API_KEY)
+
 
 @app.route("/add_customer", methods=["POST"])
 def add_customer():
