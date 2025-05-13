@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 customers = []
 
-GOOGLE_API_KEY = os.environ.get("AIzaSyB0rX-Ev4J7r0pTiCmD-m5s5Cn8nZQZhZ4")
+GOOGLE_API_KEY = "AIzaSyB0rX-Ev4J7r0pTiCmD-m5s5Cn8nZQZhZ4"
 
 vehicles = [
     {"capacity": 1500},
