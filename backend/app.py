@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 customers = []
 
-GOOGLE_API_KEY = "AIzaSyB0rX-Ev4J7r0pTiCmD-m5s5Cn8nZQZhZ4"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 vehicles = [
     {"capacity": 1500},
@@ -54,7 +54,15 @@ def get_distance_matrix(locations):
             "key": GOOGLE_API_KEY
         }
         res = requests.get(url, params=params).json()
-        row = [el["duration"]["value"] for el in res["rows"][0]["elements"]]
+
+        if res["status"] != "OK":
+            raise Exception(f"Google API error: {res['status']} - {res.get('error_message')}")
+
+        row = []
+        for el in res["rows"][0]["elements"]:
+            if el["status"] != "OK":
+                raise Exception(f"Element error: {el['status']}")
+            row.append(el["duration"]["value"])
         matrix.append(row)
     return matrix
 
