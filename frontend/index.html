@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Delivery Dashboard</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB0rX-Ev4J7r0pTiCmD-m5s5Cn8nZQZhZ4&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap" async defer></script>
 </head>
 <body>
   <h1>Enter Customer Details</h1>
@@ -17,7 +17,6 @@
   <script>
     let lat = null, lng = null;
     const placeInput = document.getElementById("place");
-    const BACKEND_URL = "https://your-render-url.onrender.com"; // Replace with real URL
 
     const autocomplete = new google.maps.places.Autocomplete(placeInput);
     autocomplete.addListener("place_changed", () => {
@@ -27,7 +26,7 @@
     });
 
     function submitCustomer() {
-      fetch(`${BACKEND_URL}/add_customer`, {
+      fetch('/add_customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -40,7 +39,7 @@
     }
 
     function optimize() {
-      fetch(`${BACKEND_URL}/optimize`, { method: 'POST' })
+      fetch('/optimize', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
           document.getElementById("output").innerText = JSON.stringify(data, null, 2);
