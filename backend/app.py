@@ -43,6 +43,8 @@ def optimize_routes():
     coords = [f"{c['lat']},{c['lng']}" for c in customers]
     depot = coords[0]
     locations = [depot] + coords
+    # print in log the locations
+    print("Locations:", locations)
     dist_matrix = get_distance_matrix(locations)
 
     weights = [int(c["weight"]) for c in customers]
