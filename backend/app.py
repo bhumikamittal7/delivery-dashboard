@@ -66,37 +66,77 @@ def optimize_routes():
 #         matrix.append(row)
 #     return matrix
 
+# def get_distance_matrix(locations):
+#     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
+#     matrix = []
+#     print(locations)
+#     # Check if locations are valid
+#     if not locations or len(locations) < 2:
+#         raise ValueError("At least two locations are required for distance matrix calculation.")
+#     for origin in locations:
+#         params = {
+#             "origins": origin,
+#             "destinations": "|".join(locations),
+#             "key": GOOGLE_API_KEY
+#         }
+#         res = requests.get(url, params=params).json()
+
+#         # Handle potential API error
+#         # if "rows" not in res or not res["rows"]:
+#         #     raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
+        
+#         elements = res["rows"][0].get("elements", [])
+#         if not elements:
+#             raise ValueError(f"No elements returned in matrix for origin: {origin}")
+
+#         row = []
+#         for el in elements:
+#             if el.get("status") != "OK":
+#                 row.append(9999999)  # Use a big number to indicate failure
+#             else:
+#                 row.append(el["duration"]["value"])
+#         matrix.append(row)
+#     return matrix
+
 def get_distance_matrix(locations):
+    import json
+
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     matrix = []
-    print(locations)
-    # Check if locations are valid
-    if not locations or len(locations) < 2:
-        raise ValueError("At least two locations are required for distance matrix calculation.")
+
     for origin in locations:
         params = {
             "origins": origin,
             "destinations": "|".join(locations),
             "key": GOOGLE_API_KEY
         }
-        res = requests.get(url, params=params).json()
 
-        # Handle potential API error
-        # if "rows" not in res or not res["rows"]:
-        #     raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
-        
+        res = requests.get(url, params=params).json()
+        print(f"\nRequest from origin: {origin}")
+        print("API response status:", res.get("status"))
+        print("API full response:", json.dumps(res, indent=2))
+
+        if res.get("status") != "OK":
+            raise ValueError(f"Distance matrix API top-level error: {res.get('error_message', 'Unknown error')}")
+
+        if "rows" not in res or not res["rows"]:
+            raise ValueError(f"Distance matrix returned no rows for origin {origin}. Full response: {res}")
+
         elements = res["rows"][0].get("elements", [])
         if not elements:
-            raise ValueError(f"No elements returned in matrix for origin: {origin}")
+            raise ValueError(f"No elements in response for origin {origin}. Full response: {res}")
 
         row = []
         for el in elements:
             if el.get("status") != "OK":
-                row.append(9999999)  # Use a big number to indicate failure
+                print(f"Element error status: {el.get('status')}")
+                row.append(9999999)
             else:
                 row.append(el["duration"]["value"])
         matrix.append(row)
+
     return matrix
+
 
 
 def convert_time(deadline_str):
