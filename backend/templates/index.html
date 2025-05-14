@@ -3,6 +3,12 @@
 <head>
   <title>Delivery Dashboard</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk&libraries=places"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 800px; margin: auto; }
+    input, button { margin: 8px 0; display: block; padding: 8px; width: 100%; }
+    #output { white-space: pre-wrap; background: #f5f5f5; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
+    .success { color: green; }
+  </style>
 </head>
 <body>
   <h1>Enter Customer Details</h1>
@@ -12,13 +18,15 @@
   <button onclick="submitCustomer()">Add Customer</button>
   <button onclick="optimize()">Optimize Routes</button>
 
-  <pre id="output"></pre>
+  <div id="message"></div>
+  <h3>Optimized Routes</h3>
+  <div id="output"></div>
 
   <script>
     let lat = null, lng = null;
     const placeInput = document.getElementById("place");
-
     const autocomplete = new google.maps.places.Autocomplete(placeInput);
+
     autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
       lat = place.geometry.location.lat();
@@ -26,23 +34,51 @@
     });
 
     function submitCustomer() {
+      const weight = document.getElementById('weight').value;
+      const deadline = document.getElementById('deadline').value;
+
+      if (!lat || !lng) {
+        alert("Please select a valid location from the suggestions.");
+        return;
+      }
+
       fetch('/add_customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: placeInput.value,
-          weight: document.getElementById('weight').value,
-          deadline: document.getElementById('deadline').value,
-          lat, lng
+          weight: weight,
+          deadline: deadline,
+          lat: lat,
+          lng: lng
         })
-      }).then(res => res.json()).then(data => alert(data.message));
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('message').innerHTML = `<p class="success">${data.message}</p>`;
+        document.getElementById('place').value = '';
+        document.getElementById('weight').value = '';
+        document.getElementById('deadline').value = '';
+        lat = null;
+        lng = null;
+      });
     }
 
     function optimize() {
       fetch('/optimize', { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-          document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+          const out = document.getElementById("output");
+          out.innerHTML = "";
+          if (data.routes) {
+            data.routes.forEach(r => {
+              const div = document.createElement("div");
+              div.innerHTML = `<strong>Truck ${r.vehicle}:</strong> ${r.route.join(" ➝ ")}`;
+              out.appendChild(div);
+            });
+          } else {
+            out.innerText = "Error or no routes generated.";
+          }
         });
     }
   </script>
