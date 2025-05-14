@@ -11,6 +11,7 @@ app = Flask(__name__)
 customers = []
 
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+print(GOOGLE_API_KEY)
 
 vehicles = [
     {"capacity": 1500},
@@ -66,6 +67,10 @@ def optimize_routes():
 def get_distance_matrix(locations):
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     matrix = []
+    print(locations)
+    # Check if locations are valid
+    if not locations or len(locations) < 2:
+        raise ValueError("At least two locations are required for distance matrix calculation.")
     for origin in locations:
         params = {
             "origins": origin,
