@@ -29,6 +29,11 @@ def add_customer():
     customers.append(data)
     return jsonify({"message": "Customer added"}), 200
 
+@app.route("/get_customers", methods=["GET"])
+def get_customers():
+    return jsonify(customers)
+
+
 @app.route("/optimize", methods=["POST"])
 def optimize_routes():
     if len(customers) == 0:

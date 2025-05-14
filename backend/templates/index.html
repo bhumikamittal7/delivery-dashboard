@@ -4,10 +4,13 @@
   <title>Delivery Dashboard</title>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk&libraries=places"></script>
   <style>
-    body { font-family: Arial; padding: 20px; max-width: 800px; margin: auto; }
+    body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
     input, button { margin: 8px 0; display: block; padding: 8px; width: 100%; }
-    #output { white-space: pre-wrap; background: #f5f5f5; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
+    #output, #customerTable { background: #f5f5f5; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
     .success { color: green; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 8px; text-align: left; }
   </style>
 </head>
 <body>
@@ -17,10 +20,14 @@
   <input id="deadline" type="time" />
   <button onclick="submitCustomer()">Add Customer</button>
   <button onclick="optimize()">Optimize Routes</button>
+  <button onclick="showCustomers()">Show All Customers</button>
 
   <div id="message"></div>
   <h3>Optimized Routes</h3>
   <div id="output"></div>
+
+  <h3>Customer List</h3>
+  <div id="customerTable"></div>
 
   <script>
     let lat = null, lng = null;
@@ -79,6 +86,31 @@
           } else {
             out.innerText = "Error or no routes generated.";
           }
+        });
+    }
+
+    function showCustomers() {
+      fetch('/get_customers')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById("customerTable");
+          if (data.length === 0) {
+            container.innerHTML = "<em>No customers added yet.</em>";
+            return;
+          }
+
+          let html = "<table><tr><th>Name</th><th>Weight (kg)</th><th>Deadline</th><th>Lat</th><th>Lng</th></tr>";
+          data.forEach(c => {
+            html += `<tr>
+              <td>${c.name}</td>
+              <td>${c.weight}</td>
+              <td>${c.deadline}</td>
+              <td>${c.lat.toFixed(5)}</td>
+              <td>${c.lng.toFixed(5)}</td>
+            </tr>`;
+          });
+          html += "</table>";
+          container.innerHTML = html;
         });
     }
   </script>
