@@ -55,15 +55,7 @@ def get_distance_matrix(locations):
             "key": GOOGLE_API_KEY
         }
         res = requests.get(url, params=params).json()
-
-        if res["status"] != "OK":
-            raise Exception(f"Google API error: {res['status']} - {res.get('error_message')}")
-
-        row = []
-        for el in res["rows"][0]["elements"]:
-            if el["status"] != "OK":
-                raise Exception(f"Element error: {el['status']}")
-            row.append(el["duration"]["value"])
+        row = [el["duration"]["value"] for el in res["rows"][0]["elements"]]
         matrix.append(row)
     return matrix
 
