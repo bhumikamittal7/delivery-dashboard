@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Delivery Dashboard</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk&libraries=places"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk&libraries=places&callback=initMap"></script>
   <style>
     body { font-family: Arial; padding: 20px; max-width: 900px; margin: auto; }
     input, button { margin: 8px 0; display: block; padding: 8px; width: 100%; }
@@ -28,6 +28,11 @@
 
   <h3>Customer List</h3>
   <div id="customerTable"></div>
+
+  <h3>Customer Map</h3>
+  <div id="map" style="height: 400px; width: 100%; margin-top: 10px;"></div>
+  <button onclick="plotCustomers()">Plot on Map</button>
+
 
   <script>
     let lat = null, lng = null;
@@ -113,6 +118,38 @@
           container.innerHTML = html;
         });
     }
+
+    let map;
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 10,
+    center: { lat: 28.6139, lng: 77.2090 }, // Default: New Delhi (update as needed)
+  });
+}
+
+function plotCustomers() {
+  fetch("/get_customers")
+    .then(res => res.json())
+    .then(customers => {
+      if (!map) initMap();
+
+      // Clear old markers if needed (not implemented yet)
+      let bounds = new google.maps.LatLngBounds();
+      customers.forEach((c, idx) => {
+        const pos = { lat: c.lat, lng: c.lng };
+        const marker = new google.maps.Marker({
+          position: pos,
+          map,
+          label: `${idx + 1}`,
+          title: `${c.name} (Deadline: ${c.deadline})`,
+        });
+        bounds.extend(pos);
+      });
+      map.fitBounds(bounds);
+    });
+}
+
   </script>
+  
 </body>
 </html>

@@ -49,6 +49,20 @@ def optimize_routes():
     result = solve_vrp(dist_matrix, weights, deadlines)
     return jsonify(result)
 
+# def get_distance_matrix(locations):
+#     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
+#     matrix = []
+#     for origin in locations:
+#         params = {
+#             "origins": origin,
+#             "destinations": "|".join(locations),
+#             "key": GOOGLE_API_KEY
+#         }
+#         res = requests.get(url, params=params).json()
+#         row = [el["duration"]["value"] for el in res["rows"][0]["elements"]]
+#         matrix.append(row)
+#     return matrix
+
 def get_distance_matrix(locations):
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     matrix = []
@@ -59,9 +73,24 @@ def get_distance_matrix(locations):
             "key": GOOGLE_API_KEY
         }
         res = requests.get(url, params=params).json()
-        row = [el["duration"]["value"] for el in res["rows"][0]["elements"]]
+
+        # Handle potential API error
+        if "rows" not in res or not res["rows"]:
+            raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
+        
+        elements = res["rows"][0].get("elements", [])
+        if not elements:
+            raise ValueError(f"No elements returned in matrix for origin: {origin}")
+
+        row = []
+        for el in elements:
+            if el.get("status") != "OK":
+                row.append(9999999)  # Use a big number to indicate failure
+            else:
+                row.append(el["duration"]["value"])
         matrix.append(row)
     return matrix
+
 
 def convert_time(deadline_str):
     from datetime import datetime
