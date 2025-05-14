@@ -82,8 +82,8 @@ def get_distance_matrix(locations):
         res = requests.get(url, params=params).json()
 
         # Handle potential API error
-        if "rows" not in res or not res["rows"]:
-            raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
+        # if "rows" not in res or not res["rows"]:
+        #     raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
         
         elements = res["rows"][0].get("elements", [])
         if not elements:
