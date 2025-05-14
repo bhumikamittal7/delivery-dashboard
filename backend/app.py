@@ -52,57 +52,55 @@ def optimize_routes():
     result = solve_vrp(dist_matrix, weights, deadlines)
     return jsonify(result)
 
+
 # def get_distance_matrix(locations):
+#     import json
+
 #     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
 #     matrix = []
+
 #     for origin in locations:
 #         params = {
 #             "origins": origin,
 #             "destinations": "|".join(locations),
 #             "key": GOOGLE_API_KEY
 #         }
-#         res = requests.get(url, params=params).json()
-#         row = [el["duration"]["value"] for el in res["rows"][0]["elements"]]
-#         matrix.append(row)
-#     return matrix
 
-# def get_distance_matrix(locations):
-#     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
-#     matrix = []
-#     print(locations)
-#     # Check if locations are valid
-#     if not locations or len(locations) < 2:
-#         raise ValueError("At least two locations are required for distance matrix calculation.")
-#     for origin in locations:
-#         params = {
-#             "origins": origin,
-#             "destinations": "|".join(locations),
-#             "key": GOOGLE_API_KEY
-#         }
 #         res = requests.get(url, params=params).json()
+#         print(f"\nRequest from origin: {origin}")
+#         print("API response status:", res.get("status"))
+#         print("API full response:", json.dumps(res, indent=2))
 
-#         # Handle potential API error
-#         # if "rows" not in res or not res["rows"]:
-#         #     raise ValueError(f"Distance matrix API error: {res.get('error_message', 'No rows returned')}")
-        
+#         if res.get("status") != "OK":
+#             raise ValueError(f"Distance matrix API top-level error: {res.get('error_message', 'Unknown error')}")
+
+#         if "rows" not in res or not res["rows"]:
+#             raise ValueError(f"Distance matrix returned no rows for origin {origin}. Full response: {res}")
+
 #         elements = res["rows"][0].get("elements", [])
 #         if not elements:
-#             raise ValueError(f"No elements returned in matrix for origin: {origin}")
+#             raise ValueError(f"No elements in response for origin {origin}. Full response: {res}")
 
 #         row = []
 #         for el in elements:
 #             if el.get("status") != "OK":
-#                 row.append(9999999)  # Use a big number to indicate failure
+#                 print(f"Element error status: {el.get('status')}")
+#                 row.append(9999999)
 #             else:
 #                 row.append(el["duration"]["value"])
 #         matrix.append(row)
+
 #     return matrix
+
 
 def get_distance_matrix(locations):
     import json
-
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     matrix = []
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
 
     for origin in locations:
         params = {
@@ -111,7 +109,7 @@ def get_distance_matrix(locations):
             "key": GOOGLE_API_KEY
         }
 
-        res = requests.get(url, params=params).json()
+        res = requests.get(url, params=params, headers=headers).json()
         print(f"\nRequest from origin: {origin}")
         print("API response status:", res.get("status"))
         print("API full response:", json.dumps(res, indent=2))
@@ -136,8 +134,6 @@ def get_distance_matrix(locations):
         matrix.append(row)
 
     return matrix
-
-
 
 def convert_time(deadline_str):
     from datetime import datetime
@@ -191,3 +187,15 @@ def solve_vrp(distance_matrix, weights, deadlines):
                 index = solution.Value(routing.NextVar(index))
             routes.append({"vehicle": vehicle_id + 1, "route": route})
     return {"routes": routes}
+
+import requests
+
+def test_connection():
+    test_url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins=21.1059361,79.0696657&destinations=21.1494952,79.066155&key=AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk"
+    try:
+        response = requests.get(test_url)
+        print("Test connection response:", response.json())
+    except Exception as e:
+        print("Test connection failed:", e)
+
+test_connection()
