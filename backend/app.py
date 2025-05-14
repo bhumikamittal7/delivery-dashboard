@@ -10,7 +10,7 @@ load_dotenv()
 app = Flask(__name__)
 customers = []
 
-GOOGLE_API_KEY = "AIzaSyBQWLBpMBBwmGlDExp2Us-Eoc7rtIiKcAk"
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 vehicles = [
     {"capacity": 1500},
@@ -22,7 +22,6 @@ vehicles = [
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 @app.route("/add_customer", methods=["POST"])
 def add_customer():
