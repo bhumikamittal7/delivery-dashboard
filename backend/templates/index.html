@@ -128,13 +128,12 @@ function initMap() {
   });
 }
 
-function plotCustomers() {
+{% comment %} function plotCustomers() {
   fetch("/get_customers")
     .then(res => res.json())
     .then(customers => {
       if (!map) initMap();
 
-      // Clear old markers if needed (not implemented yet)
       let bounds = new google.maps.LatLngBounds();
       customers.forEach((c, idx) => {
         const pos = { lat: c.lat, lng: c.lng };
@@ -142,13 +141,53 @@ function plotCustomers() {
           position: pos,
           map,
           label: `${idx + 1}`,
-          title: `${c.name} (Deadline: ${c.deadline})`,
+          title: `${c.name}\nWeight: ${c.weight} kg\nDeadline: ${c.deadline}`,
         });
         bounds.extend(pos);
       });
       map.fitBounds(bounds);
     });
 }
+    
+{% endcomment %}
+
+function plotCustomers() {
+  fetch("/get_customers")
+    .then(res => res.json())
+    .then(customers => {
+      if (!map) initMap();
+
+      let bounds = new google.maps.LatLngBounds();
+      const infoWindow = new google.maps.InfoWindow();
+
+      customers.forEach((c, idx) => {
+        const pos = { lat: c.lat, lng: c.lng };
+        const marker = new google.maps.Marker({
+          position: pos,
+          map,
+          label: `${idx + 1}`,
+        });
+
+        const content = `
+          <div style="min-width: 180px">
+            <strong>${c.name}</strong><br/>
+            <b>Weight:</b> ${c.weight} kg<br/>
+            <b>Deadline:</b> ${c.deadline}
+          </div>
+        `;
+
+        marker.addListener("click", () => {
+          infoWindow.setContent(content);
+          infoWindow.open(map, marker);
+        });
+
+        bounds.extend(pos);
+      });
+
+      map.fitBounds(bounds);
+    });
+}
+
 function clearCustomers() {
   if (!confirm("Are you sure you want to clear all customers?")) return;
 
