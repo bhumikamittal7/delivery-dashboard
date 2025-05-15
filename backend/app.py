@@ -34,6 +34,11 @@ def add_customer():
 def get_customers():
     return jsonify(customers)
 
+@app.route("/clear_customers", methods=["POST"])
+def clear_customers():
+    customers.clear()
+    return jsonify({"message": "All customers cleared."}), 200
+
 
 @app.route("/optimize", methods=["POST"])
 def optimize_routes():

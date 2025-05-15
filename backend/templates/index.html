@@ -21,6 +21,7 @@
   <button onclick="submitCustomer()">Add Customer</button>
   <button onclick="optimize()">Optimize Routes</button>
   <button onclick="showCustomers()">Show All Customers</button>
+  <button onclick="clearCustomers()">Clear All Customers</button>
 
   <div id="message"></div>
   <h3>Optimized Routes</h3>
@@ -146,6 +147,17 @@ function plotCustomers() {
         bounds.extend(pos);
       });
       map.fitBounds(bounds);
+    });
+}
+function clearCustomers() {
+  if (!confirm("Are you sure you want to clear all customers?")) return;
+
+  fetch('/clear_customers', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('message').innerHTML = `<p class="success">${data.message}</p>`;
+      document.getElementById("customerTable").innerHTML = "";
+      document.getElementById("output").innerHTML = "";
     });
 }
 
