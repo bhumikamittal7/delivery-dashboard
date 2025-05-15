@@ -128,29 +128,6 @@ function initMap() {
   });
 }
 
-{% comment %} function plotCustomers() {
-  fetch("/get_customers")
-    .then(res => res.json())
-    .then(customers => {
-      if (!map) initMap();
-
-      let bounds = new google.maps.LatLngBounds();
-      customers.forEach((c, idx) => {
-        const pos = { lat: c.lat, lng: c.lng };
-        const marker = new google.maps.Marker({
-          position: pos,
-          map,
-          label: `${idx + 1}`,
-          title: `${c.name}\nWeight: ${c.weight} kg\nDeadline: ${c.deadline}`,
-        });
-        bounds.extend(pos);
-      });
-      map.fitBounds(bounds);
-    });
-}
-    
-{% endcomment %}
-
 function plotCustomers() {
   fetch("/get_customers")
     .then(res => res.json())
