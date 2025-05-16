@@ -39,19 +39,6 @@ def clear_customers():
     customers.clear()
     return jsonify({"message": "All customers cleared."}), 200
 
-@app.route('/delete_customer', methods=['POST'])
-def delete_customer():
-    data = request.get_json()
-    target_lat = data.get('lat')
-    target_lng = data.get('lng')
-
-    global customer_data
-    before_count = len(customer_data)
-    customer_data = [c for c in customer_data if c['lat'] != target_lat or c['lng'] != target_lng]
-    after_count = len(customer_data)
-
-    return jsonify({'success': True, 'removed': before_count - after_count})
-
 
 @app.route("/optimize", methods=["POST"])
 def optimize_routes():
@@ -64,21 +51,11 @@ def optimize_routes():
     print("Locations:", locations)
     dist_matrix = get_distance_matrix(locations)
 
-<<<<<<< HEAD
-    # weights = [int(c["weight"]) for c in customers]
-    weights = []
-    for c in customers:
-        try:
-            weights.append(int(c["weight"]))
-        except (ValueError, TypeError):
-            weights.append(0)  
-=======
     try:
         weights = [int(c["weight"]) if c["weight"] else 0 for c in customers]
     except ValueError as e:
         return jsonify({"error": f"Invalid weight value: {e}"}), 400
 
->>>>>>> 024be982538a899ae367c4d0042fad43e98687ec
     deadlines = [convert_time(c["deadline"]) for c in customers]
     result = solve_vrp(dist_matrix, weights, deadlines)
     return jsonify(result)
