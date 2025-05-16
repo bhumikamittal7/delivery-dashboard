@@ -22,6 +22,7 @@
   <button onclick="optimize()">Optimize Routes</button>
   <button onclick="showCustomers()">Show All Customers</button>
   <button onclick="clearCustomers()">Clear All Customers</button>
+  <ul id="customerList"></ul>
 
   <div id="message"></div>
   <h3>Optimized Routes</h3>
@@ -176,6 +177,34 @@ function clearCustomers() {
       document.getElementById("output").innerHTML = "";
     });
 }
+function loadCustomers() {
+  fetch('/get_customers')
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById('customerList');
+      list.innerHTML = '';
+      data.forEach(customer => {
+        const item = document.createElement('li');
+        item.textContent = `${customer.name} (${customer.weight}kg)`;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Remove';
+        btn.onclick = () => {
+          fetch('/delete_customer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: customer.lat, lng: customer.lng })
+          })
+          .then(() => loadCustomers());
+        };
+
+        item.appendChild(btn);
+        list.appendChild(item);
+      });
+    });
+}
+
+loadCustomers();
 
   </script>
   
