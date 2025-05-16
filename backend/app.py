@@ -52,23 +52,48 @@ def remove_customers():
 
 @app.route("/optimize", methods=["POST"])
 def optimize_routes():
+    global customers  # we'll modify the list in place
+
     if len(customers) == 0:
         return jsonify({"error": "No customers provided"}), 400
 
-    coords = [f"{c['lat']},{c['lng']}" for c in customers]
-    depot = coords[0]
-    locations = [depot] + coords
-    print("Locations:", locations)
-    dist_matrix = get_distance_matrix(locations)
+    total_capacity = sum(v["capacity"] for v in vehicles)
 
     try:
         weights = [int(c["weight"]) if c["weight"] else 0 for c in customers]
     except ValueError as e:
         return jsonify({"error": f"Invalid weight value: {e}"}), 400
 
+    total_weight = sum(weights)
+    removed_customers = []
+
+    if total_weight > total_capacity:
+        sorted_customers = sorted(customers, key=lambda c: convert_time(c["deadline"]), reverse=True)
+        allowed_customers = []
+        current_weight = 0
+
+        for c in sorted_customers[::-1]:
+            w = int(c["weight"])
+            if current_weight + w <= total_capacity:
+                allowed_customers.append(c)
+                current_weight += w
+
+        removed_customers = [c for c in customers if c not in allowed_customers]
+        customers = allowed_customers
+
+    coords = [f"{c['lat']},{c['lng']}" for c in customers]
+    depot = coords[0]
+    locations = [depot] + coords
+    dist_matrix = get_distance_matrix(locations)
+    weights = [int(c["weight"]) for c in customers]
     deadlines = [convert_time(c["deadline"]) for c in customers]
+
     result = solve_vrp(dist_matrix, weights, deadlines)
-    return jsonify(result)
+    return jsonify({
+        "routes": result["routes"],
+        "removed_customers": removed_customers
+    })
+
 
 def get_distance_matrix(locations):
     import json

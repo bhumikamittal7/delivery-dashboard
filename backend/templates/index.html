@@ -77,23 +77,32 @@
       });
     }
 
-    function optimize() {
-      fetch('/optimize', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          const out = document.getElementById("output");
-          out.innerHTML = "";
-          if (data.routes) {
-            data.routes.forEach(r => {
-              const div = document.createElement("div");
-              div.innerHTML = `<strong>Truck ${r.vehicle}:</strong> ${r.route.join(" ➝ ")}`;
-              out.appendChild(div);
-            });
-          } else {
-            out.innerText = "Error or no routes generated.";
-          }
+function optimize() {
+  fetch('/optimize', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      const out = document.getElementById("output");
+      out.innerHTML = "";
+
+      if (data.routes) {
+        data.routes.forEach(r => {
+          const div = document.createElement("div");
+          div.innerHTML = `<strong>Truck ${r.vehicle}:</strong> ${r.route.join(" ➝ ")}`;
+          out.appendChild(div);
         });
-    }
+
+        if (data.removed_customers && data.removed_customers.length > 0) {
+          const removedDiv = document.createElement("div");
+          removedDiv.innerHTML = `<br/><strong>Removed Customers (due to weight overflow):</strong> <ul>${
+            data.removed_customers.map(c => `<li>${c.name} - ${c.weight}kg - ${c.deadline}</li>`).join("")
+          }</ul>`;
+          out.appendChild(removedDiv);
+        }
+      } else {
+        out.innerText = "Error or no routes generated.";
+      }
+    });
+}
 
 function showCustomers() {
   fetch('/get_customers')
