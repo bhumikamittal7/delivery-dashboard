@@ -52,7 +52,13 @@ def optimize_routes():
     print("Locations:", locations)
     dist_matrix = get_distance_matrix(locations)
 
-    weights = [int(c["weight"]) for c in customers]
+    # weights = [int(c["weight"]) for c in customers]
+    weights = []
+    for c in customers:
+        try:
+            weights.append(int(c["weight"]))
+        except (ValueError, TypeError):
+            weights.append(0)  
     deadlines = [convert_time(c["deadline"]) for c in customers]
     result = solve_vrp(dist_matrix, weights, deadlines)
     return jsonify(result)
