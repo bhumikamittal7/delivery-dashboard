@@ -61,10 +61,10 @@ def optimize_routes():
     coords = [f"{c['lat']},{c['lng']}" for c in customers]
     depot = coords[0]
     locations = [depot] + coords
-    # print in log the locations
     print("Locations:", locations)
     dist_matrix = get_distance_matrix(locations)
 
+<<<<<<< HEAD
     # weights = [int(c["weight"]) for c in customers]
     weights = []
     for c in customers:
@@ -72,6 +72,13 @@ def optimize_routes():
             weights.append(int(c["weight"]))
         except (ValueError, TypeError):
             weights.append(0)  
+=======
+    try:
+        weights = [int(c["weight"]) if c["weight"] else 0 for c in customers]
+    except ValueError as e:
+        return jsonify({"error": f"Invalid weight value: {e}"}), 400
+
+>>>>>>> 024be982538a899ae367c4d0042fad43e98687ec
     deadlines = [convert_time(c["deadline"]) for c in customers]
     result = solve_vrp(dist_matrix, weights, deadlines)
     return jsonify(result)
