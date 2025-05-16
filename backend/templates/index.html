@@ -95,32 +95,52 @@
         });
     }
 
-    function showCustomers() {
-      fetch('/get_customers')
-        .then(res => res.json())
-        .then(data => {
-          const container = document.getElementById("customerTable");
-          if (data.length === 0) {
-            container.innerHTML = "<em>No customers added yet.</em>";
-            return;
-          }
+function showCustomers() {
+  fetch('/get_customers')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("customerTable");
+      if (data.length === 0) {
+        container.innerHTML = "<em>No customers added yet.</em>";
+        return;
+      }
 
-          let html = "<table><tr><th>Name</th><th>Weight (kg)</th><th>Deadline</th><th>Lat</th><th>Lng</th></tr>";
-          data.forEach(c => {
-            html += `<tr>
-              <td>${c.name}</td>
-              <td>${c.weight}</td>
-              <td>${c.deadline}</td>
-              <td>${c.lat.toFixed(5)}</td>
-              <td>${c.lng.toFixed(5)}</td>
-            </tr>`;
-          });
-          html += "</table>";
-          container.innerHTML = html;
-        });
-    }
+      let html = `
+        <form id="customerForm">
+        <table>
+          <tr>
+            <th>Select</th>
+            <th>Name</th>
+            <th>Weight (kg)</th>
+            <th>Deadline</th>
+            <th>Lat</th>
+            <th>Lng</th>
+          </tr>
+      `;
 
-    let map;
+      data.forEach((c, idx) => {
+        html += `
+          <tr>
+            <td><input type="checkbox" name="selected" data-lat="${c.lat}" data-lng="${c.lng}" /></td>
+            <td>${c.name}</td>
+            <td>${c.weight}</td>
+            <td>${c.deadline}</td>
+            <td>${c.lat.toFixed(5)}</td>
+            <td>${c.lng.toFixed(5)}</td>
+          </tr>
+        `;
+      });
+
+      html += `</table>
+        <button type="button" onclick="removeSelected()">Remove Selected</button>
+      </form>`;
+
+      container.innerHTML = html;
+    });
+}
+
+let map;
+
 function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 10,
@@ -176,6 +196,31 @@ function clearCustomers() {
       document.getElementById("output").innerHTML = "";
     });
 }
+
+function removeSelected() {
+  const checkboxes = document.querySelectorAll('input[name="selected"]:checked');
+  if (checkboxes.length === 0) {
+    alert("Please select at least one customer to remove.");
+    return;
+  }
+
+  const selectedCustomers = Array.from(checkboxes).map(cb => ({
+    lat: parseFloat(cb.getAttribute('data-lat')),
+    lng: parseFloat(cb.getAttribute('data-lng'))
+  }));
+
+  fetch('/remove_customers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(selectedCustomers)
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    showCustomers();
+  });
+}
+
 
 
   </script>

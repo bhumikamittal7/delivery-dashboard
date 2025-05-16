@@ -39,6 +39,16 @@ def clear_customers():
     customers.clear()
     return jsonify({"message": "All customers cleared."}), 200
 
+@app.route("/remove_customers", methods=["POST"])
+def remove_customers():
+    data = request.get_json()
+    to_remove = set((c['lat'], c['lng']) for c in data)
+    global customers
+    original_len = len(customers)
+    customers = [c for c in customers if (c['lat'], c['lng']) not in to_remove]
+    removed_count = original_len - len(customers)
+    return jsonify({"message": f"{removed_count} customers removed."}), 200
+
 
 @app.route("/optimize", methods=["POST"])
 def optimize_routes():
